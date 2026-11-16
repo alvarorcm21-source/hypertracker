@@ -2,7 +2,8 @@ const CACHE_NAME = 'hypertracker-v3';
 const ASSETS = [
     './',
     './index.html',
-    './manifest.json'
+    './manifest.json',
+    './sticker_3141-512x512.png'
 ];
 
 // Instalación y Caché
@@ -58,8 +59,8 @@ self.addEventListener('push', event => {
     const title = 'HyperTracker';
     const options = {
         body: event.data ? event.data.text() : '¡Es hora de registrar tu entrenamiento!',
-        icon: 'https://dummyimage.com/192x192/3b82f6/ffffff.png&text=HT',
-        badge: 'https://dummyimage.com/192x192/3b82f6/ffffff.png&text=HT'
+        icon: './sticker_3141-512x512.png',
+        badge: './sticker_3141-512x512.png'
     };
     event.waitUntil(
         self.registration.showNotification(title, options)
