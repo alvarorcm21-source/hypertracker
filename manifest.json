@@ -30,14 +30,14 @@
   ],
   "screenshots": [
     {
-      "src": "https://dummyimage.com/1080x1920/0f172a/3b82f6.png&text=HT+Mobile",
-      "sizes": "1080x1920",
+      "src": "./sticker_3141-512x512.png",
+      "sizes": "512x512",
       "type": "image/png",
       "form_factor": "narrow"
     },
     {
-      "src": "https://dummyimage.com/1920x1080/0f172a/3b82f6.png&text=HT+Desktop",
-      "sizes": "1920x1080",
+      "src": "./sticker_3141-512x512.png",
+      "sizes": "512x512",
       "type": "image/png",
       "form_factor": "wide"
     }
