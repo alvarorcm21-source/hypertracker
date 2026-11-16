@@ -1,13 +1,19 @@
 {
   "id": "/",
+  "scope": "/",
   "name": "HyperTracker Science",
   "short_name": "HyperTracker",
   "start_url": "./index.html",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "minimal-ui"],
   "orientation": "portrait",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
   "description": "Dashboard para tracking de Hipertrofia y Sobrecarga Progresiva",
+  "lang": "es",
+  "dir": "ltr",
+  "categories": ["health", "fitness", "lifestyle", "sports"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "https://dummyimage.com/192x192/3b82f6/ffffff.png&text=HT",
@@ -24,10 +30,16 @@
   ],
   "screenshots": [
     {
-      "src": "https://dummyimage.com/1080x1920/0f172a/3b82f6.png&text=HyperTracker",
+      "src": "https://dummyimage.com/1080x1920/0f172a/3b82f6.png&text=HT+Mobile",
       "sizes": "1080x1920",
       "type": "image/png",
       "form_factor": "narrow"
+    },
+    {
+      "src": "https://dummyimage.com/1920x1080/0f172a/3b82f6.png&text=HT+Desktop",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide"
     }
   ]
 }
