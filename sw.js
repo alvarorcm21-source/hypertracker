@@ -1,8 +1,9 @@
-const CACHE_NAME = 'hypertracker-v3';
+const CACHE_NAME = 'hypertracker-v4';
 const ASSETS = [
     './',
     './index.html',
     './manifest.json',
+    './sticker_3141-192x192.png',
     './sticker_3141-512x512.png'
 ];
 
@@ -34,19 +35,16 @@ self.addEventListener('fetch', event => {
 });
 
 // ==========================================
-// NUEVO: Funciones Avanzadas PWA
+// Funciones Avanzadas PWA
 // ==========================================
 
-// 1. Sincronización en Segundo Plano (Background Sync)
 self.addEventListener('sync', event => {
     if (event.tag === 'sync-entrenamientos') {
         console.log('Sincronización en segundo plano ejecutada');
-        // Aquí iría el código para enviar datos a una base de datos cuando vuelva el internet
         event.waitUntil(Promise.resolve()); 
     }
 });
 
-// 2. Sincronización Periódica
 self.addEventListener('periodicsync', event => {
     if (event.tag === 'actualizar-rutinas') {
         console.log('Sincronización periódica ejecutada');
@@ -54,13 +52,12 @@ self.addEventListener('periodicsync', event => {
     }
 });
 
-// 3. Notificaciones Push
 self.addEventListener('push', event => {
     const title = 'HyperTracker';
     const options = {
         body: event.data ? event.data.text() : '¡Es hora de registrar tu entrenamiento!',
-        icon: './sticker_3141-512x512.png',
-        badge: './sticker_3141-512x512.png'
+        icon: './sticker_3141-192x192.png',
+        badge: './sticker_3141-192x192.png'
     };
     event.waitUntil(
         self.registration.showNotification(title, options)
