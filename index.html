@@ -69,7 +69,7 @@
             -webkit-appearance: none;
             margin: 0;
         }
-        input[type="number"], select {
+        input[type="number"], input[type="text"], select {
             background-color: #162033;
             color: #ffffff;
         }
@@ -145,10 +145,13 @@
                 <div id="days-container" class="flex gap-2"></div>
             </div>
 
-            <div id="routine-header" class="flex justify-between items-end">
-                <div>
+            <div id="routine-header" class="flex flex-wrap justify-between items-end gap-3">
+                <div class="min-w-0">
                     <h2 id="routine-day-title" class="text-2xl font-extrabold text-white tracking-tight">Día 1: Push</h2>
                     <p id="routine-day-desc" class="text-sm text-slate-400 mt-0.5">Pectoral, Hombros y Tríceps</p>
+                </div>
+                <div id="routine-actions" class="flex items-center gap-2">
+                    <!-- Botones generados dinámicamente (Combinar ejercicios / Restaurar día) -->
                 </div>
             </div>
 
@@ -179,7 +182,7 @@
                 <h3 class="text-sm font-bold text-white mb-2 flex items-center gap-2">
                     <i class="ph ph-database text-blue-400 text-base"></i> Backup de Datos (Local)
                 </h3>
-                <p class="text-xs text-slate-400 mb-3.5">Exporta tu historial, cambios de rutina y datos de recuperación en un archivo JSON para no perder tu progreso.</p>
+                <p class="text-xs text-slate-400 mb-3.5">Exporta tu historial, super series personalizadas, cambios de rutina y datos de recuperación en un archivo JSON para no perder tu progreso.</p>
                 <div class="flex gap-2">
                     <button onclick="exportData()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold py-2.5 rounded-xl transition flex justify-center items-center gap-2 border border-slate-700/60">
                         <i class="ph ph-export"></i> Exportar
@@ -198,6 +201,92 @@
     <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-5 py-3 rounded-full font-semibold text-sm shadow-xl shadow-blue-950/50 transform transition-all duration-300 translate-y-24 opacity-0 z-50 pointer-events-none flex items-center gap-2 max-w-[90vw] whitespace-nowrap">
         <i class="ph ph-check-circle text-xl shrink-0"></i>
         <span id="toast-msg" class="truncate">Guardado correctamente</span>
+    </div>
+
+    <!-- MODAL: COMBINAR EJERCICIOS (CREADOR DE SUPER SERIES) -->
+    <div id="combine-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-50 hidden items-center justify-center p-3 sm:p-5">
+        <div class="bg-[#0f172a] w-full max-w-lg max-h-[90vh] rounded-3xl border border-purple-500/35 shadow-2xl flex flex-col overflow-hidden fade-in">
+            <div class="px-5 py-4 border-b border-slate-800 flex justify-between items-center bg-[#0d1424]">
+                <div>
+                    <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
+                        <i class="ph ph-link text-purple-400"></i> Combinar Ejercicios (Super Serie)
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Une dos ejercicios en subdivisiones a. y b. dentro de una sola tarjeta</p>
+                </div>
+                <button onclick="closeCombineModal()" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition">
+                    <i class="ph ph-x text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-5 space-y-4 overflow-y-auto hide-scroll">
+                <!-- Ejercicio A -->
+                <div>
+                    <label class="text-xs font-bold uppercase tracking-wider text-purple-300 block mb-1.5">Ejercicio a. (De tu rutina de hoy)</label>
+                    <div class="relative">
+                        <select id="combine-slot-a" onchange="onCombineSlotAChange()" class="w-full text-sm font-semibold rounded-xl px-3.5 py-2.5 pr-8 border border-slate-700 focus:border-purple-500 outline-none appearance-none">
+                            <!-- Opciones generadas por JS -->
+                        </select>
+                        <i class="ph ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <!-- Origen del Ejercicio B -->
+                <div>
+                    <label class="text-xs font-bold uppercase tracking-wider text-purple-300 block mb-2">¿Con qué ejercicio quieres combinarlo? (Ejercicio b.)</label>
+                    <div class="grid grid-cols-2 gap-2 p-1 bg-slate-900 rounded-xl border border-slate-800">
+                        <button type="button" id="combine-mode-today" onclick="setCombineMode('today')" class="py-2 px-2.5 rounded-lg text-xs font-bold transition">
+                            Otro de hoy
+                        </button>
+                        <button type="button" id="combine-mode-db" onclick="setCombineMode('db')" class="py-2 px-2.5 rounded-lg text-xs font-bold transition">
+                            De Guía Nippard
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Selector B: Otro de hoy -->
+                <div id="combine-b-today-box">
+                    <label class="text-[11px] font-semibold text-slate-400 block mb-1.5">Selecciona el segundo ejercicio de hoy</label>
+                    <div class="relative">
+                        <select id="combine-slot-b-today" onchange="autoFillCombineTitle()" class="w-full text-sm font-semibold rounded-xl px-3.5 py-2.5 pr-8 border border-slate-700 focus:border-purple-500 outline-none appearance-none">
+                            <!-- Opciones generadas por JS -->
+                        </select>
+                        <i class="ph ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <!-- Selector B: Desde Guía Nippard -->
+                <div id="combine-b-db-box" class="hidden space-y-3">
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-400 block mb-1.5">Músculo del Ejercicio b.</label>
+                        <div class="relative">
+                            <select id="combine-b-muscle" onchange="populateCombineDbExercises()" class="w-full text-sm font-semibold rounded-xl px-3.5 py-2.5 pr-8 border border-slate-700 focus:border-purple-500 outline-none appearance-none">
+                                <!-- Músculos de nippardExerciseDB -->
+                            </select>
+                            <i class="ph ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-400 block mb-1.5">Ejercicio b. (Recomendado por Jeff Nippard)</label>
+                        <div class="relative">
+                            <select id="combine-b-exercise" onchange="autoFillCombineTitle()" class="w-full text-sm font-semibold rounded-xl px-3.5 py-2.5 pr-8 border border-slate-700 focus:border-purple-500 outline-none appearance-none">
+                                <!-- Ejercicios del músculo seleccionado -->
+                            </select>
+                            <i class="ph ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Título de la Super Serie -->
+                <div>
+                    <label class="text-[11px] font-semibold text-slate-400 block mb-1.5">Nombre de la Super Serie</label>
+                    <input type="text" id="combine-title" placeholder="Ej: Super Serie Cuádriceps + Isquios" class="w-full text-sm font-semibold rounded-xl px-3.5 py-2.5 border border-slate-700 focus:border-purple-500 outline-none">
+                </div>
+
+                <button onclick="confirmCombineExercises()" class="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-sm font-bold shadow-lg shadow-purple-900/30 active:scale-95 transition flex justify-center items-center gap-2">
+                    <i class="ph ph-link text-lg"></i> Crear Super Serie
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- MODAL DE ANALÍTICAS RÁPIDAS POR EJERCICIO (IGUAL A LA REFERENCIA VISUAL) -->
@@ -516,13 +605,29 @@
         let trainingLogs = JSON.parse(localStorage.getItem('hyperTrackerLogs')) || [];
         let readinessLogs = JSON.parse(localStorage.getItem('hyperTrackerReadiness')) || {};
         let exerciseSwaps = JSON.parse(localStorage.getItem('hyperTrackerSwaps')) || {};
+        let customDayItems = JSON.parse(localStorage.getItem('hyperTrackerDayItems')) || {};
 
         let activeExerciseInputs = {}; // Estado temporal de inputs indexado por slotId
         let openSwappers = {};         // Qué paneles de "Cambiar ejercicio" están abiertos
+        let combineMode = 'today';     // 'today' o 'db'
 
         // Instancias de gráficos independientes (Tab vs Modal)
         let tabChartInstance = null;
         let modalChartInstance = null;
+
+        // Obtener lista activa de ejercicios del día (respetando super series personalizadas)
+        function getDayItems(dayIndex) {
+            if (customDayItems[dayIndex]) {
+                return customDayItems[dayIndex];
+            }
+            const base = routineData.find(r => r.dayIndex === dayIndex);
+            return base ? JSON.parse(JSON.stringify(base.items)) : [];
+        }
+
+        function saveDayItems(dayIndex, items) {
+            customDayItems[dayIndex] = items;
+            localStorage.setItem('hyperTrackerDayItems', JSON.stringify(customDayItems));
+        }
 
         // Obtener el nombre real del ejercicio en un slot (respetando cambios guardados)
         function getActiveExerciseName(slot) {
@@ -595,16 +700,41 @@
 
             activeDayIndex = index;
             const dayInfo = routineData.find(r => r.dayIndex === index);
+            const items = getDayItems(index);
 
             document.getElementById('routine-day-title').innerText = dayInfo.name;
             document.getElementById('routine-day-desc').innerText = dayInfo.focus;
 
-            renderExercises(dayInfo.items);
+            renderRoutineHeaderActions(index, items);
+            renderExercises(items);
 
             // Verificar Readiness si es hoy y es día de entrenamiento
-            if (index === new Date().getDay() && dayInfo.items.length > 0) {
+            if (index === new Date().getDay() && items.length > 0) {
                 checkReadiness();
             }
+        }
+
+        function renderRoutineHeaderActions(dayIndex, items) {
+            const actionsEl = document.getElementById('routine-actions');
+            const standaloneCount = items.filter(i => !i.isSuperset).length;
+            const isCustomized = Boolean(customDayItems[dayIndex]);
+
+            let html = '';
+            if (standaloneCount > 0) {
+                html += `
+                    <button onclick="openCombineModal()" class="px-3 py-2 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/40 text-xs font-bold flex items-center gap-1.5 active:scale-95 transition">
+                        <i class="ph ph-link text-sm"></i> Combinar ejercicios
+                    </button>
+                `;
+            }
+            if (isCustomized) {
+                html += `
+                    <button onclick="resetDayLayout()" title="Restaurar ejercicios originales de este día" class="px-2.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white border border-slate-700/60 text-xs font-semibold flex items-center gap-1 active:scale-95 transition">
+                        <i class="ph ph-arrow-counter-clockwise text-sm"></i>
+                    </button>
+                `;
+            }
+            actionsEl.innerHTML = html;
         }
 
         // Inicializa los sets de un slot (ejercicio simple o sub-ejercicio de superset)
@@ -810,12 +940,14 @@
                     });
 
                     card.innerHTML = `
-                        <div class="px-4 py-3 bg-gradient-to-r from-purple-900/35 to-blue-900/20 border-b border-purple-500/20 flex justify-between items-center">
-                            <div class="flex items-center gap-2">
-                                <span class="px-2 py-0.5 rounded-md bg-purple-500/20 border border-purple-400/40 text-purple-300 text-[10px] font-extrabold uppercase tracking-wider">Superset</span>
-                                <h3 class="font-extrabold text-white text-base">${item.title}</h3>
+                        <div class="px-4 py-3 bg-gradient-to-r from-purple-900/35 to-blue-900/20 border-b border-purple-500/20 flex justify-between items-center gap-2">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <span class="px-2 py-0.5 rounded-md bg-purple-500/20 border border-purple-400/40 text-purple-300 text-[10px] font-extrabold uppercase tracking-wider shrink-0">Super Serie</span>
+                                <h3 class="font-extrabold text-white text-sm sm:text-base truncate">${item.title}</h3>
                             </div>
-                            <span class="text-[11px] text-slate-400 font-medium">Alterna a. y b.</span>
+                            <button onclick="ungroupSuperset('${item.id}')" title="Separar en ejercicios individuales" class="px-2.5 py-1 rounded-lg bg-slate-900/70 hover:bg-slate-800 text-slate-300 text-[11px] font-semibold border border-slate-700/70 flex items-center gap-1 shrink-0 active:scale-95 transition">
+                                <i class="ph ph-link-break text-purple-300"></i> Separar
+                            </button>
                         </div>
                         <div class="p-4">
                             ${subHTML}
@@ -843,10 +975,13 @@
                                 <h3 class="font-bold text-white text-lg leading-snug">${exName}</h3>
                             </div>
                             <div class="flex items-center gap-1.5 shrink-0">
+                                <button onclick="openCombineModal('${item.id}')" title="Combinar en Super Serie" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-purple-300 flex items-center justify-center border border-slate-700/60 transition active:scale-95">
+                                    <i class="ph ph-link text-base"></i>
+                                </button>
                                 <button onclick="openExerciseAnalyticsModal('${escapeAttr(exName)}')" title="Ver analíticas" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-purple-400 flex items-center justify-center border border-slate-700/60 transition active:scale-95">
                                     <i class="ph ph-chart-line-up text-lg"></i>
                                 </button>
-                                <button onclick="toggleSwapper('${item.id}')" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700/60 flex items-center gap-1.5 transition active:scale-95">
+                                <button onclick="toggleSwapper('${item.id}')" class="px-2.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700/60 flex items-center gap-1 transition active:scale-95">
                                     <i class="ph ph-arrows-left-right text-blue-400"></i> Cambiar
                                 </button>
                             </div>
@@ -863,6 +998,235 @@
 
         function escapeAttr(str) {
             return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+
+        /* =====================================================================
+           4.5. CREADOR DE SUPER SERIES ("COMBINAR EJERCICIOS")
+           ===================================================================== */
+        function openCombineModal(preselectSlotId = null) {
+            const items = getDayItems(activeDayIndex);
+            const standalones = items.filter(i => !i.isSuperset);
+
+            if (standalones.length === 0) {
+                showToast('No hay ejercicios sueltos para combinar hoy', true);
+                return;
+            }
+
+            const selectA = document.getElementById('combine-slot-a');
+            selectA.innerHTML = standalones.map(s => {
+                const name = getActiveExerciseName(s);
+                return `<option value="${s.id}">[${s.muscle}] ${name}</option>`;
+            }).join('');
+
+            if (preselectSlotId && standalones.some(s => s.id === preselectSlotId)) {
+                selectA.value = preselectSlotId;
+            }
+
+            // Poblar músculos desde la Guía Nippard
+            const muscleSelect = document.getElementById('combine-b-muscle');
+            muscleSelect.innerHTML = Object.keys(nippardExerciseDB).map(m =>
+                `<option value="${escapeAttr(m)}">${m}</option>`
+            ).join('');
+
+            // Sugerir antagonista automáticamente (ej. Cuádriceps -> Isquiosurales)
+            const selectedSlotA = standalones.find(s => s.id === selectA.value);
+            const antagonistMap = {
+                'Cuádriceps': 'Isquiosurales',
+                'Isquiosurales': 'Cuádriceps',
+                'Bíceps': 'Tríceps',
+                'Tríceps': 'Bíceps',
+                'Pectoral': 'Espalda',
+                'Espalda': 'Pectoral',
+                'Abductores': 'Aductores',
+                'Aductores': 'Abductores'
+            };
+            if (selectedSlotA && antagonistMap[selectedSlotA.muscle] && nippardExerciseDB[antagonistMap[selectedSlotA.muscle]]) {
+                muscleSelect.value = antagonistMap[selectedSlotA.muscle];
+            }
+
+            populateCombineDbExercises();
+            populateCombineTodayB();
+            setCombineMode(standalones.length >= 2 ? 'today' : 'db');
+
+            const modal = document.getElementById('combine-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeCombineModal() {
+            const modal = document.getElementById('combine-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function setCombineMode(mode) {
+            const standalones = getDayItems(activeDayIndex).filter(i => !i.isSuperset);
+            if (mode === 'today' && standalones.length < 2) {
+                showToast('Necesitas al menos 2 ejercicios sueltos hoy; usa Guía Nippard', true);
+                mode = 'db';
+            }
+
+            combineMode = mode;
+            const btnToday = document.getElementById('combine-mode-today');
+            const btnDb = document.getElementById('combine-mode-db');
+            const boxToday = document.getElementById('combine-b-today-box');
+            const boxDb = document.getElementById('combine-b-db-box');
+
+            if (mode === 'today') {
+                btnToday.className = 'py-2 px-2.5 rounded-lg text-xs font-bold transition bg-purple-600 text-white shadow';
+                btnDb.className = 'py-2 px-2.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white';
+                boxToday.classList.remove('hidden');
+                boxDb.classList.add('hidden');
+            } else {
+                btnDb.className = 'py-2 px-2.5 rounded-lg text-xs font-bold transition bg-purple-600 text-white shadow';
+                btnToday.className = 'py-2 px-2.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white';
+                boxDb.classList.remove('hidden');
+                boxToday.classList.add('hidden');
+            }
+            autoFillCombineTitle();
+        }
+
+        function onCombineSlotAChange() {
+            populateCombineTodayB();
+            autoFillCombineTitle();
+        }
+
+        function populateCombineTodayB() {
+            const slotAId = document.getElementById('combine-slot-a').value;
+            const standalones = getDayItems(activeDayIndex).filter(i => !i.isSuperset && i.id !== slotAId);
+            const selectB = document.getElementById('combine-slot-b-today');
+
+            if (standalones.length === 0) {
+                selectB.innerHTML = '<option value="">No hay otro ejercicio suelto hoy</option>';
+            } else {
+                selectB.innerHTML = standalones.map(s => {
+                    const name = getActiveExerciseName(s);
+                    return `<option value="${s.id}">[${s.muscle}] ${name}</option>`;
+                }).join('');
+            }
+        }
+
+        function populateCombineDbExercises() {
+            const muscle = document.getElementById('combine-b-muscle').value;
+            const list = nippardExerciseDB[muscle] || [];
+            const selectEx = document.getElementById('combine-b-exercise');
+            selectEx.innerHTML = list.map(ex =>
+                `<option value="${escapeAttr(ex.name)}">[${ex.tier}-Tier] ${ex.name}</option>`
+            ).join('');
+            autoFillCombineTitle();
+        }
+
+        function autoFillCombineTitle() {
+            const items = getDayItems(activeDayIndex);
+            const slotAId = document.getElementById('combine-slot-a').value;
+            const slotA = items.find(i => i.id === slotAId);
+            if (!slotA) return;
+
+            const labelA = slotA.muscle;
+            let labelB = '';
+
+            if (combineMode === 'today') {
+                const slotBId = document.getElementById('combine-slot-b-today').value;
+                const slotB = items.find(i => i.id === slotBId);
+                labelB = slotB ? getActiveExerciseName(slotB) : '';
+            } else {
+                labelB = document.getElementById('combine-b-exercise').value || '';
+            }
+
+            const titleInput = document.getElementById('combine-title');
+            titleInput.value = labelB ? `Super Serie ${labelA} + ${labelB}` : `Super Serie ${labelA}`;
+        }
+
+        function confirmCombineExercises() {
+            const items = getDayItems(activeDayIndex);
+            const slotAId = document.getElementById('combine-slot-a').value;
+            const idxA = items.findIndex(i => i.id === slotAId && !i.isSuperset);
+            if (idxA === -1) return;
+
+            const slotA = items[idxA];
+            const exAName = getActiveExerciseName(slotA);
+            let subB = null;
+
+            if (combineMode === 'today') {
+                const slotBId = document.getElementById('combine-slot-b-today').value;
+                const idxB = items.findIndex(i => i.id === slotBId && !i.isSuperset);
+                if (idxB === -1) {
+                    showToast('Selecciona un segundo ejercicio válido', true);
+                    return;
+                }
+                const slotB = items[idxB];
+                subB = {
+                    id: slotB.id,
+                    label: 'b',
+                    muscle: slotB.muscle,
+                    name: getActiveExerciseName(slotB)
+                };
+                items.splice(idxB, 1);
+            } else {
+                const muscleB = document.getElementById('combine-b-muscle').value;
+                const exBName = document.getElementById('combine-b-exercise').value;
+                if (!exBName) {
+                    showToast('Selecciona un ejercicio de la Guía Nippard', true);
+                    return;
+                }
+                subB = {
+                    id: `ht-custom-${Date.now()}`,
+                    label: 'b',
+                    muscle: muscleB,
+                    name: exBName
+                };
+            }
+
+            const customTitle = document.getElementById('combine-title').value.trim() || `Super Serie ${slotA.muscle} / ${subB.muscle}`;
+            const newIdxA = items.findIndex(i => i.id === slotA.id);
+
+            const supersetObj = {
+                id: `ht-ss-${Date.now()}`,
+                isSuperset: true,
+                isCustom: true,
+                title: customTitle,
+                subExercises: [
+                    {
+                        id: slotA.id,
+                        label: 'a',
+                        muscle: slotA.muscle,
+                        name: exAName
+                    },
+                    subB
+                ]
+            };
+
+            items.splice(newIdxA, 1, supersetObj);
+            saveDayItems(activeDayIndex, items);
+
+            closeCombineModal();
+            rerenderCurrentDay();
+            showToast(`¡${customTitle} creada!`);
+        }
+
+        function ungroupSuperset(supersetId) {
+            const items = getDayItems(activeDayIndex);
+            const idx = items.findIndex(i => i.id === supersetId && i.isSuperset);
+            if (idx === -1) return;
+
+            const ss = items[idx];
+            const restoredStandalones = ss.subExercises.map(sub => ({
+                id: sub.id,
+                muscle: sub.muscle,
+                name: getActiveExerciseName(sub)
+            }));
+
+            items.splice(idx, 1, ...restoredStandalones);
+            saveDayItems(activeDayIndex, items);
+            rerenderCurrentDay();
+            showToast('Super Serie separada en ejercicios individuales');
+        }
+
+        function resetDayLayout() {
+            delete customDayItems[activeDayIndex];
+            localStorage.setItem('hyperTrackerDayItems', JSON.stringify(customDayItems));
+            rerenderCurrentDay();
+            showToast('Rutina original del día restaurada');
         }
 
         /* =====================================================================
@@ -890,8 +1254,9 @@
         }
 
         function rerenderCurrentDay() {
-            const currentDay = routineData.find(r => r.dayIndex === activeDayIndex);
-            if (currentDay) renderExercises(currentDay.items);
+            const items = getDayItems(activeDayIndex);
+            renderRoutineHeaderActions(activeDayIndex, items);
+            renderExercises(items);
         }
 
         function updateSetData(key, setIndex, field, value) {
@@ -959,8 +1324,8 @@
         }
 
         function saveSupersetData(supersetId) {
-            const day = routineData.find(r => r.dayIndex === activeDayIndex);
-            const superset = day ? day.items.find(i => i.id === supersetId) : null;
+            const items = getDayItems(activeDayIndex);
+            const superset = items.find(i => i.id === supersetId && i.isSuperset);
             if (!superset || !superset.subExercises) return;
 
             let savedCount = 0;
@@ -1605,7 +1970,8 @@
             const dataToExport = {
                 logs: trainingLogs,
                 readiness: readinessLogs,
-                swaps: exerciseSwaps
+                swaps: exerciseSwaps,
+                dayItems: customDayItems
             };
             const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -1637,6 +2003,10 @@
                     if (imported.swaps) {
                         exerciseSwaps = imported.swaps;
                         localStorage.setItem('hyperTrackerSwaps', JSON.stringify(exerciseSwaps));
+                    }
+                    if (imported.dayItems) {
+                        customDayItems = imported.dayItems;
+                        localStorage.setItem('hyperTrackerDayItems', JSON.stringify(customDayItems));
                     }
                     showToast('Datos importados. Actualizando...');
                     setTimeout(() => location.reload(), 1200);
