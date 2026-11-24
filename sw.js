@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hypertracker-v4';
+const CACHE_NAME = 'hypertracker-v5';
 const ASSETS = [
     './',
     './index.html',
