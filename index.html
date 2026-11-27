@@ -3380,6 +3380,30 @@
       };
       reader.readAsText(file);
     }
+
+    /* ===================================================================
+       PWA SERVICE WORKER (AUTO-ACTUALIZACIÓN SIN CACHÉ PEGADO)
+       =================================================================== */
+    function setupPWA() {
+      if (!('serviceWorker' in navigator) || !location.protocol.startsWith('http')) return;
+
+      let refreshing = false;
+      // Cuando el nuevo sw.js toma el control, recarga automáticamente para mostrar la versión nueva
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (refreshing) return;
+        refreshing = true;
+        window.location.reload();
+      });
+
+      navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
+        .then((reg) => {
+          // Forzar revisión de actualización cada vez que abres la app
+          reg.update().catch(() => {});
+        })
+        .catch((err) => console.warn('SW omitido:', err));
+    }
+
+    setupPWA();
   </script>
 </body>
 </html>
