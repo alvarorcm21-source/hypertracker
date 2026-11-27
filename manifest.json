@@ -1,45 +1,24 @@
 {
-  "id": "/",
-  "scope": "/",
-  "name": "HyperTracker Science",
-  "short_name": "HyperTracker",
-  "start_url": "./index.html",
+  "name": "FitTracker v1.0.0",
+  "short_name": "FitTracker",
+  "description": "Entrenamiento basado en ciencia · Modo Coach y Entrenado",
+  "start_url": "./",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "minimal-ui"],
+  "background_color": "#070b14",
+  "theme_color": "#0b1120",
   "orientation": "portrait",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
-  "description": "Dashboard para tracking de Hipertrofia y Sobrecarga Progresiva",
-  "lang": "es",
-  "dir": "ltr",
-  "categories": ["health", "fitness", "lifestyle", "sports"],
-  "prefer_related_applications": false,
   "icons": [
     {
-      "src": "./sticker_3141-192x192.png",
+      "src": "./icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
-      "src": "./sticker_3141-512x512.png",
+      "src": "./icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "./sticker_3141-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "narrow"
-    },
-    {
-      "src": "./sticker_3141-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "wide"
     }
   ]
 }
