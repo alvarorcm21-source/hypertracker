@@ -889,7 +889,10 @@
         { name: 'Dominadas / Jalón al pecho', tier: 'S', cue: 'Tracción vertical esencial para amplitud dorsal' },
         { name: 'Dominadas Lastradas / Jalón Pesado', tier: 'S', cue: 'Tracción vertical pesada de alta transferencia de fuerza' },
         { name: 'Remo en T', tier: 'S', cue: 'Gran sobrecarga para trapecio medio y romboides' },
+        { name: 'Remo en T con Apoyo al Pecho', tier: 'S', cue: 'Máxima estabilidad y sobrecarga en espalda media sin fatiga lumbar' },
         { name: 'Remo con Apoyo en Pecho', tier: 'S', cue: 'Cero fatiga lumbar: máximo estímulo pesado para espalda alta' },
+        { name: 'Remo con Barra', tier: 'A', cue: 'Compuesto clásico de fuerza para densidad de espalda' },
+        { name: 'Encogimientos Kelso (Kelso Shrugs)', tier: 'S', cue: 'Retracción escapular pura para trapecio medio y romboides' },
         { name: 'Remo en polea baja apoyado', tier: 'S', cue: 'Estabilidad total para aislar dorsales y espalda media' },
         { name: 'Jalón al Pecho Agarre Neutro', tier: 'S', cue: 'Excelente alineación biomecánica para dorsales' },
         { name: 'Remo Unilateral en Polea (Iliac Row)', tier: 'S', cue: 'Codo pegado al cuerpo tirando hacia la cadera' },
@@ -1056,16 +1059,16 @@
           templateId: 'ari-push', defaultDay: 1, name: 'Push Fuerza', focus: 'Pectoral, Hombros y Tríceps (Fuerza)', hasLiss: false,
           items: [
             { id: 't-d1-1', muscle: 'Pectoral', name: 'Press de Banca', repTarget: '4–6 reps' },
-            { id: 't-d1-2', muscle: 'Pectoral', name: 'Press Inclinado con Mancuernas', repTarget: '6–10 reps' },
+            { id: 't-d1-2', muscle: 'Pectoral', name: 'Press Inclinado', repTarget: '6–10 reps' },
             { id: 't-d1-3', muscle: 'Hombros', name: 'Press Militar', repTarget: '6–8 reps' },
-            { id: 't-d1-4', muscle: 'Hombros', name: 'Elevaciones Laterales en Polea', repTarget: '10–15 reps' },
+            { id: 't-d1-4', muscle: 'Hombros', name: 'Elevaciones Laterales', repTarget: '10–15 reps' },
             { id: 't-d1-5', muscle: 'Tríceps', name: 'Extensión Tríceps en polea', repTarget: '8–12 reps' }
           ]
         },
         {
           templateId: 'ari-pull', defaultDay: 2, name: 'Pull Fuerza', focus: 'Espalda, Salud Articular y Agarre', hasLiss: false,
           items: [
-            { id: 't-d2-1', muscle: 'Espalda', name: 'Dominadas Lastradas / Jalón Pesado', repTarget: '5–8 reps' },
+            { id: 't-d2-1', muscle: 'Espalda', name: 'Dominadas / Jalón al pecho', repTarget: '5–8 reps' },
             { id: 't-d2-2', muscle: 'Espalda', name: 'Remo con Apoyo en Pecho', repTarget: '6–10 reps' },
             { id: 't-d2-3', muscle: 'Hombros', name: 'Face Pulls', repTarget: '12–15 reps' },
             { id: 't-d2-4', muscle: 'Bíceps', name: 'Curl de Bíceps inclinado', repTarget: '8–12 reps' },
@@ -1204,7 +1207,7 @@
         if (nippardExerciseDB[muscle].some(e => normalizeText(e.name) === target)) return muscle;
       }
       const keywordRules = [
-        { muscle: 'Espalda', keys: ['remo', 'jalon', 'dominada', 'pullover'] },
+        { muscle: 'Espalda', keys: ['remo', 'jalon', 'dominada', 'pullover', 'kelso', 'dorsal'] },
         { muscle: 'Pectoral', keys: ['pecho', 'banca', 'pec-deck', 'fondos', 'press inclinado'] },
         { muscle: 'Hombros', keys: ['hombro', 'militar', 'lateral', 'face pull', 'pajaros'] },
         { muscle: 'Bíceps', keys: ['biceps', 'martillo', 'predicador', 'bayesiano'] },
@@ -3289,6 +3292,77 @@
       timerInterval = null; timerEndTime = null; timeRemaining = 0;
       updateTimerDisplay();
     }
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && timerEndTime) {
+        syncTimer();
+      }
+    });
+
+    function toggleAutoRest() {
+      autoRestEnabled = !autoRestEnabled;
+      safeWrite(profileKey(viewingProfileId, 'autoRest'), autoRestEnabled);
+      updateAutoRestButtonUI();
+      showToast(autoRestEnabled ? 'Descanso automático activado' : 'Descanso en modo manual');
+    }
+
+    function updateAutoRestButtonUI() {
+      const btn = document.getElementById('btn-auto-rest');
+      if (!btn) return;
+      if (autoRestEnabled) {
+        btn.innerText = 'Auto: ON';
+        btn.className = 'px-2 py-1 rounded-lg text-[10px] font-bold border transition active:scale-95 bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
+      } else {
+        btn.innerText = 'Auto: OFF';
+        btn.className = 'px-2 py-1 rounded-lg text-[10px] font-bold border transition active:scale-95 bg-slate-800 text-slate-400 border-slate-700';
+      }
+    }
+
+    function highlightRecommendedRestPreset(seconds, labelText) {
+      const labelEl = document.getElementById('timer-rec-label');
+      if (labelEl) labelEl.innerText = labelText || 'Descanso Inteligente';
+      document.querySelectorAll('.rest-preset-btn').forEach(btn => {
+        btn.classList.remove('rest-preset-recommended');
+      });
+      if (seconds) {
+        const targetBtn = document.getElementById(`preset-rest-${seconds}`);
+        if (targetBtn) targetBtn.classList.add('rest-preset-recommended');
+      }
+    }
+
+    function showToast(msg, isError = false) {
+      const t = document.getElementById('toast');
+      const icon = t.querySelector('i');
+      document.getElementById('toast-msg').innerText = msg;
+      t.classList.remove('bg-blue-600', 'bg-red-600');
+      t.classList.add(isError ? 'bg-red-600' : 'bg-blue-600');
+      if (icon) icon.className = isError ? 'ph ph-warning-circle text-lg shrink-0' : 'ph ph-check-circle text-lg shrink-0';
+      t.classList.remove('translate-y-24', 'opacity-0');
+      clearTimeout(window._toastT);
+      window._toastT = setTimeout(() => t.classList.add('translate-y-24', 'opacity-0'), 3000);
+    }
+
+    function exportData() {
+      const data = {
+        app: 'FitTracker', version: '1.0.0', profile: viewingProfileId,
+        logs: trainingLogs, readiness: readinessLogs, swaps: exerciseSwaps,
+        templateItems: customTemplateItems, setupMemos, exerciseImages,
+        autoRest: autoRestEnabled, bodyLogs, lissLogs, tdeeTarget,
+        weeklySchedule: safeRead(profileKey(viewingProfileId, 'weeklySchedule'), {}),
+        permSchedule: safeRead(profileKey(viewingProfileId, 'permSchedule'), null)
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `FitTracker_${viewingProfileId}_${getTodayStr()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast(`Backup de ${USER_PROFILES[viewingProfileId].name} descargado`);
+    }
+
     function normalizeImportedLogs(rawLogs) {
       if (!Array.isArray(rawLogs)) return [];
       return rawLogs
