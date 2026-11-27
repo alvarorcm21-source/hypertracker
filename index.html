@@ -54,6 +54,16 @@
       color: #f8fafc;
     }
 
+    /* Quitar flechas nativas de input number para ganar espacio en móvil */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
     .tab-active {
       color: #60a5fa !important;
       border-bottom: 2px solid #3b82f6;
@@ -829,7 +839,6 @@
     /* ===================================================================
        SEGURIDAD Y PERFILES (PIN DE 6 DÍGITOS HASHEADO)
        =================================================================== */
-    // Hash polinomial verificado para el PIN de 6 dígitos de Álvaro
     const ADMIN_PIN_HASH = 422782492;
     const SESSION_STORAGE_KEY = 'fittracker_v1_session';
 
@@ -1234,7 +1243,6 @@
        FLUJO DE INICIO: SPLASH -> SELECCIÓN DE USUARIO -> PIN 6 DÍGITOS
        =================================================================== */
     document.addEventListener('DOMContentLoaded', () => {
-      // Soporte de teclado físico para el PIN
       document.addEventListener('keydown', (e) => {
         const pinModal = document.getElementById('pin-modal');
         if (pinModal.classList.contains('hidden')) return;
@@ -1243,7 +1251,6 @@
         else if (e.key === 'Escape') closePinModal();
       });
 
-      // Mostrar splash 1.1s y luego verificar sesión guardada
       setTimeout(() => {
         const splash = document.getElementById('splash-screen');
         splash.classList.add('opacity-0');
@@ -1275,11 +1282,9 @@
 
     function handleUserSelect(userId) {
       if (userId === 'ariel') {
-        // Ariel entra directo sin PIN
         safeWrite(SESSION_STORAGE_KEY, { userId: 'ariel', isAdminVerified: false });
         enterApp('ariel', false);
       } else if (userId === 'alvaro') {
-        // Álvaro requiere PIN de 6 dígitos
         openPinModal();
       }
     }
@@ -1335,7 +1340,6 @@
 
     function validatePin() {
       if (hashPin(pinBuffer) === ADMIN_PIN_HASH) {
-        // PIN correcto: recordar sesión de Admin en este dispositivo
         safeWrite(SESSION_STORAGE_KEY, { userId: 'alvaro', isAdminVerified: true });
         closePinModal();
         enterApp('alvaro', true);
@@ -1462,7 +1466,6 @@
         `Sesión: ${prof.name} · ${prof.role === 'admin' ? 'Coach' : 'Entrenado'}`;
       document.getElementById('backup-profile-label').innerText = prof.name;
 
-      // Banner superior si Admin está inspeccionando a Ariel
       const banner = document.getElementById('admin-viewing-banner');
       if (isAdminSession && viewingProfileId !== 'alvaro') {
         banner.classList.remove('hidden');
@@ -1470,7 +1473,6 @@
         banner.classList.add('hidden');
       }
 
-      // Mostrar pestaña Peso & Kcal para perfiles que la usan (Ariel)
       const tabBody = document.getElementById('tab-body');
       if (prof.hasBodyTab) {
         tabBody.classList.remove('hidden');
@@ -1575,7 +1577,6 @@
       return { map: getBaseActiveDaysMap(pid), isCustomWeek: false };
     }
 
-    // Construye los 7 días de la semana asignando la cola de rutinas a los días activos en orden (L -> D)
     function resolveWeekSchedule(pid, customMapOverride = null) {
       const queue = BASE_ROUTINES[pid];
       const { map, isCustomWeek } = customMapOverride
@@ -1600,7 +1601,6 @@
             lissHint: tpl.lissHint || ''
           };
         }
-        // Día de descanso (Ariel mantiene LISS opcional en Jueves/Sábado si cae descanso)
         const isArielActiveRest = pid === 'ariel' && (dm.dayIndex === 4 || dm.dayIndex === 6);
         return {
           dayIndex: dm.dayIndex,
@@ -1842,7 +1842,6 @@
         return;
       }
       let html = '';
-      // Solo Admin puede crear superseries o restaurar el diseño de la rutina
       if (isAdminSession) {
         const standalones = items.filter(i => !i.isSuperset);
         if (standalones.length > 0) {
@@ -1967,6 +1966,11 @@
       const guide = exerciseGuidesDB[exName] || { checklist: fallbackChecklist };
       const muscleOptions = nippardExerciseDB[slot.muscle] || [];
 
+      // Cuadrícula fija responsiva para que Peso, Reps, RIR y OK nunca se desborden en móvil
+      const rowGridClass = bwOnly
+        ? 'grid grid-cols-[20px_minmax(0,1fr)_36px] items-center gap-1.5'
+        : 'grid grid-cols-[20px_minmax(0,1fr)_minmax(0,1fr)_68px_36px] items-center gap-1.5';
+
       const swapperHTML = isSwapOpen ? `
         <div class="mb-3 p-3 rounded-2xl bg-slate-900/90 border border-purple-500/30 space-y-2 fade-in">
           <div class="flex justify-between items-center">
@@ -1983,7 +1987,7 @@
         <div class="mb-2.5">
           <div class="flex items-center gap-2 bg-slate-900/75 border border-slate-800 rounded-xl px-3 py-1.5">
             <i class="ph ph-wrench text-slate-500 text-sm shrink-0"></i>
-            <input type="text" value="${escapeAttr(memo)}" oninput="saveSetupMemo('${escapeAttr(exName)}', this.value)" placeholder="Setup Memo (ej. Asiento #4 · Agarre neutro)" class="w-full bg-transparent text-xs text-slate-200 placeholder-slate-500 outline-none">
+            <input type="text" value="${escapeAttr(memo)}" oninput="saveSetupMemo('${escapeAttr(exName)}', this.value)" placeholder="Setup Memo (ej. Asiento #4 · Agarre neutro)" class="w-full min-w-0 bg-transparent text-xs text-slate-200 placeholder-slate-500 outline-none">
           </div>
         </div>
       `;
@@ -2012,33 +2016,33 @@
         const rowKey = `${key}::${sIdx}`;
         const techOpen = Boolean(openTechRows[rowKey]);
         return `
-          <div class="mb-2">
-            <div class="flex items-center gap-1.5">
-              <span class="w-6 text-center text-xs font-extrabold text-slate-500">${sIdx + 1}</span>
+          <div class="mb-2.5">
+            <div class="${rowGridClass}">
+              <span class="text-center text-xs font-extrabold text-slate-500">${sIdx + 1}</span>
               ${!bwOnly ? `
-                <input type="number" step="0.5" placeholder="kg" value="${set.weight}" oninput="updateSetData('${escapeAttr(key)}', ${sIdx}, 'weight', this.value)" class="w-20 text-sm font-bold p-2 rounded-xl border border-slate-700/80 text-center focus:border-blue-500 outline-none">
+                <input type="number" inputmode="decimal" step="0.5" placeholder="kg" value="${set.weight}" oninput="updateSetData('${escapeAttr(key)}', ${sIdx}, 'weight', this.value)" class="w-full min-w-0 text-sm font-bold py-2 px-1.5 rounded-xl border border-slate-700/80 text-center focus:border-blue-500 outline-none">
               ` : ''}
-              <input type="number" placeholder="${isDist ? 'm' : 'reps'}" value="${set.reps}" oninput="updateSetData('${escapeAttr(key)}', ${sIdx}, 'reps', this.value)" class="flex-1 text-sm font-bold p-2 rounded-xl border border-slate-700/80 text-center focus:border-blue-500 outline-none">
+              <input type="number" inputmode="numeric" placeholder="${isDist ? 'm' : 'reps'}" value="${set.reps}" oninput="updateSetData('${escapeAttr(key)}', ${sIdx}, 'reps', this.value)" class="w-full min-w-0 text-sm font-bold py-2 px-1.5 rounded-xl border border-slate-700/80 text-center focus:border-blue-500 outline-none">
               ${!bwOnly ? `
-                <select onchange="updateSetData('${escapeAttr(key)}', ${sIdx}, 'rir', this.value)" class="w-20 text-xs font-bold p-2 rounded-xl border border-slate-700/80 text-center outline-none">
+                <select onchange="updateSetData('${escapeAttr(key)}', ${sIdx}, 'rir', this.value)" class="w-full min-w-0 text-xs font-bold py-2 px-1 rounded-xl border border-slate-700/80 text-center appearance-none focus:border-blue-500 outline-none">
                   <option value="3" ${set.rir == '3' ? 'selected' : ''}>RIR 3</option>
                   <option value="2" ${set.rir == '2' ? 'selected' : ''}>RIR 2</option>
                   <option value="1" ${set.rir == '1' ? 'selected' : ''}>RIR 1</option>
                   <option value="0" ${set.rir == '0' ? 'selected' : ''}>RIR 0</option>
                 </select>
               ` : ''}
-              <button type="button" onclick="toggleSetComplete('${escapeAttr(key)}', ${sIdx}, ${restProf.seconds})" title="Marcar serie e iniciar descanso" class="w-9 h-9 rounded-xl border flex items-center justify-center shrink-0 transition active:scale-95 ${set.done ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300' : 'bg-slate-800/90 border-slate-700 text-slate-400 hover:text-cyan-300'}">
+              <button type="button" onclick="toggleSetComplete('${escapeAttr(key)}', ${sIdx}, ${restProf.seconds})" title="Marcar serie e iniciar descanso" class="w-9 h-9 rounded-xl border flex items-center justify-center transition active:scale-95 ${set.done ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300' : 'bg-slate-800/90 border-slate-700 text-slate-400 hover:text-cyan-300'}">
                 <i class="ph ${set.done ? 'ph-check-bold' : 'ph-timer'} text-base"></i>
               </button>
             </div>
-            <div class="pl-7 mt-1 flex items-center gap-2">
+            <div class="pl-6 mt-1 flex items-center gap-2">
               <button type="button" onclick="toggleTechRow('${escapeAttr(rowKey)}')" class="text-[10px] font-bold px-2 py-0.5 rounded-md border transition ${tech.short ? tech.badgeClass : 'bg-slate-900 text-slate-500 border-slate-800 hover:text-slate-300'}">
                 ${tech.short ? `${tech.short} · ${tech.label}` : '+ Técnica'}
               </button>
               ${set.techNote ? `<span class="text-[10px] text-slate-400 truncate">${set.techNote}</span>` : ''}
             </div>
             ${techOpen ? `
-              <div class="ml-7 mt-1.5 p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 fade-in">
+              <div class="ml-6 mt-1.5 p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 fade-in">
                 <div class="flex flex-wrap gap-1">
                   ${Object.entries(SET_TECHNIQUES).map(([tid, tObj]) => `
                     <button type="button" onclick="setRowTechnique('${escapeAttr(key)}', ${sIdx}, '${tid}')" class="px-2 py-1 rounded-lg text-[10px] font-bold border ${set.technique === tid ? 'bg-blue-600 text-white border-blue-500' : 'bg-slate-800 text-slate-400 border-slate-700'}">
@@ -2057,12 +2061,12 @@
         ${swapperHTML}
         ${setupMemoHTML}
         ${checklistHTML}
-        <div class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 px-1">
-          <span class="w-6 text-center">#</span>
-          ${!bwOnly ? '<span class="w-20 text-center">Peso</span>' : ''}
-          <span class="flex-1 text-center">${isDist ? 'Metros' : 'Reps'}</span>
-          ${!bwOnly ? '<span class="w-20 text-center">Esfuerzo</span>' : ''}
-          <span class="w-9 text-center">OK</span>
+        <div class="${rowGridClass} text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+          <span class="text-center">#</span>
+          ${!bwOnly ? '<span class="text-center">Peso</span>' : ''}
+          <span class="text-center">${isDist ? 'Metros' : 'Reps'}</span>
+          ${!bwOnly ? '<span class="text-center">RIR</span>' : ''}
+          <span class="text-center">OK</span>
         </div>
         <div>${setsHTML}</div>
         <div class="flex gap-2 mt-3">
@@ -2612,7 +2616,6 @@
       customTemplateItems[dayInfo.templateId] = items;
       safeWrite(profileKey(viewingProfileId, 'templateItems'), customTemplateItems);
 
-      // Efecto espejo inteligente en la sesión de Ariel
       let mirroredInAriel = false;
       if (viewingProfileId === 'alvaro' && document.getElementById('combine-sync-ariel').checked) {
         mirroredInAriel = mirrorSupersetToAriel(nameA, nameB, title);
@@ -2626,7 +2629,6 @@
         : '¡Super Serie creada correctamente!');
     }
 
-    // Busca los ejercicios equivalentes en las rutinas de Ariel y los agrupa preservando sus repTarget
     function mirrorSupersetToAriel(exNameA, exNameB, title) {
       const normA = normalizeText(exNameA);
       const normB = normalizeText(exNameB);
@@ -3167,7 +3169,6 @@
       showToast(`Readiness de hoy: ${score}/100`);
     }
 
-    // Sincronización Coach -> Entrenado por código copiable (sin borrar historial de pesos)
     function openCoachSyncModal(mode) {
       closeConsoleDrawer();
       coachSyncMode = mode;
@@ -3288,66 +3289,47 @@
       timerInterval = null; timerEndTime = null; timeRemaining = 0;
       updateTimerDisplay();
     }
-
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && timerEndTime) syncTimer();
-    });
-
-    function highlightRecommendedRestPreset(seconds, labelText) {
-      document.getElementById('timer-rec-label').innerText = labelText || 'Descanso Inteligente';
-      document.querySelectorAll('.rest-preset-btn').forEach(b => b.classList.remove('rest-preset-recommended'));
-      if (seconds) {
-        const btn = document.getElementById(`preset-rest-${seconds}`);
-        if (btn) btn.classList.add('rest-preset-recommended');
-      }
+    function normalizeImportedLogs(rawLogs) {
+      if (!Array.isArray(rawLogs)) return [];
+      return rawLogs
+        .filter(l => l && l.date && l.exercise && Array.isArray(l.sets))
+        .map(l => ({
+          date: String(l.date).trim(),
+          ...(l.slotId ? { slotId: String(l.slotId) } : {}),
+          exercise: String(l.exercise).trim(),
+          sets: l.sets
+            .map(s => {
+              const reps = parseInt(s.reps, 10);
+              const weight = parseFloat(s.weight);
+              if (!Number.isFinite(reps) || reps <= 0) return null;
+              const cleanSet = {
+                weight: Number.isFinite(weight) && weight >= 0 ? weight : 0,
+                reps,
+                rir: s.rir !== undefined && s.rir !== null ? String(s.rir) : ''
+              };
+              if (s.technique && s.technique !== 'normal') {
+                cleanSet.technique = String(s.technique);
+                if (s.techNote) cleanSet.techNote = String(s.techNote);
+              }
+              return cleanSet;
+            })
+            .filter(Boolean)
+        }))
+        .filter(l => l.sets.length > 0);
     }
 
-    function updateAutoRestButtonUI() {
-      const btn = document.getElementById('btn-auto-rest');
-      if (autoRestEnabled) {
-        btn.innerText = 'Auto: ON';
-        btn.className = 'px-2 py-1 rounded-lg text-[10px] font-bold border bg-emerald-500/15 text-emerald-300 border-emerald-500/35';
-      } else {
-        btn.innerText = 'Auto: OFF';
-        btn.className = 'px-2 py-1 rounded-lg text-[10px] font-bold border bg-slate-800 text-slate-400 border-slate-700';
-      }
-    }
-
-    function toggleAutoRest() {
-      autoRestEnabled = !autoRestEnabled;
-      safeWrite(profileKey(viewingProfileId, 'autoRest'), autoRestEnabled);
-      updateAutoRestButtonUI();
-      showToast(autoRestEnabled ? 'Descanso automático activado' : 'Descanso en manual');
-    }
-
-    function showToast(msg, isError = false) {
-      const t = document.getElementById('toast');
-      document.getElementById('toast-msg').innerText = msg;
-      t.classList.toggle('bg-red-600', isError);
-      t.classList.toggle('bg-blue-600', !isError);
-      t.querySelector('i').className = isError ? 'ph ph-warning-circle text-lg shrink-0' : 'ph ph-check-circle text-lg shrink-0';
-      t.classList.remove('translate-y-24', 'opacity-0');
-      clearTimeout(window._toastT);
-      window._toastT = setTimeout(() => t.classList.add('translate-y-24', 'opacity-0'), 3000);
-    }
-
-    function exportData() {
-      const data = {
-        app: 'FitTracker', version: '1.0.0', profile: viewingProfileId,
-        logs: trainingLogs, readiness: readinessLogs, swaps: exerciseSwaps,
-        templateItems: customTemplateItems, setupMemos, exerciseImages,
-        autoRest: autoRestEnabled, bodyLogs, lissLogs, tdeeTarget,
-        weeklySchedule: safeRead(profileKey(viewingProfileId, 'weeklySchedule'), {}),
-        permSchedule: safeRead(profileKey(viewingProfileId, 'permSchedule'), null)
-      };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `FitTracker_${viewingProfileId}_${getTodayStr()}.json`;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      showToast(`Backup de ${USER_PROFILES[viewingProfileId].name} descargado`);
+    function translateLegacyDayItems(pid, legacyDayItems) {
+      if (!legacyDayItems || typeof legacyDayItems !== 'object') return null;
+      const converted = {};
+      const routines = BASE_ROUTINES[pid] || [];
+      Object.entries(legacyDayItems).forEach(([dayKey, items]) => {
+        const dayNum = parseInt(dayKey, 10);
+        const matched = routines.find(r => r.defaultDay === dayNum);
+        if (matched && Array.isArray(items)) {
+          converted[matched.templateId] = items;
+        }
+      });
+      return Object.keys(converted).length > 0 ? converted : null;
     }
 
     function importData(event) {
@@ -3358,16 +3340,34 @@
       reader.onload = (e) => {
         try {
           const d = JSON.parse(e.target.result);
+          if (!d || typeof d !== 'object') throw new Error('Estructura JSON inválida');
           const pid = viewingProfileId;
-          if (Array.isArray(d.logs)) safeWrite(profileKey(pid, 'logs'), d.logs);
-          if (d.readiness) safeWrite(profileKey(pid, 'readiness'), d.readiness);
-          if (d.swaps) safeWrite(profileKey(pid, 'swaps'), d.swaps);
-          if (d.templateItems) safeWrite(profileKey(pid, 'templateItems'), d.templateItems);
-          if (d.setupMemos) safeWrite(profileKey(pid, 'setupMemos'), d.setupMemos);
-          if (d.exerciseImages) safeWrite(profileKey(pid, 'exerciseImages'), d.exerciseImages);
-          if (Array.isArray(d.bodyLogs)) safeWrite(profileKey(pid, 'bodyLogs'), d.bodyLogs);
+          if (Array.isArray(d.logs)) safeWrite(profileKey(pid, 'logs'), normalizeImportedLogs(d.logs));
+          if (d.readiness && typeof d.readiness === 'object') safeWrite(profileKey(pid, 'readiness'), d.readiness);
+          if (d.swaps && typeof d.swaps === 'object') safeWrite(profileKey(pid, 'swaps'), d.swaps);
+          if (d.templateItems && typeof d.templateItems === 'object') {
+            safeWrite(profileKey(pid, 'templateItems'), d.templateItems);
+          } else if (d.dayItems && typeof d.dayItems === 'object') {
+            const mapped = translateLegacyDayItems(pid, d.dayItems);
+            if (mapped) safeWrite(profileKey(pid, 'templateItems'), mapped);
+          }
+          if (d.setupMemos && typeof d.setupMemos === 'object') safeWrite(profileKey(pid, 'setupMemos'), d.setupMemos);
+          if (d.exerciseImages && typeof d.exerciseImages === 'object') safeWrite(profileKey(pid, 'exerciseImages'), d.exerciseImages);
+          if (typeof d.autoRest === 'boolean') safeWrite(profileKey(pid, 'autoRest'), d.autoRest);
+          else if (typeof d.autoRestEnabled === 'boolean') safeWrite(profileKey(pid, 'autoRest'), d.autoRestEnabled);
+          if (typeof d.tdeeTarget === 'number' && Number.isFinite(d.tdeeTarget)) safeWrite(profileKey(pid, 'tdeeTarget'), d.tdeeTarget);
+          if (Array.isArray(d.bodyLogs)) {
+            const cleanBody = d.bodyLogs
+              .filter(b => b && b.date && Number.isFinite(parseFloat(b.weight)))
+              .map(b => ({
+                date: String(b.date).trim(),
+                weight: parseFloat(b.weight),
+                kcal: parseInt(b.kcal ?? b.calories ?? 0, 10) || 0
+              }));
+            safeWrite(profileKey(pid, 'bodyLogs'), cleanBody);
+          }
           if (Array.isArray(d.lissLogs)) safeWrite(profileKey(pid, 'lissLogs'), d.lissLogs);
-          if (d.weeklySchedule) safeWrite(profileKey(pid, 'weeklySchedule'), d.weeklySchedule);
+          if (d.weeklySchedule && typeof d.weeklySchedule === 'object') safeWrite(profileKey(pid, 'weeklySchedule'), d.weeklySchedule);
           if (d.permSchedule !== undefined) safeWrite(profileKey(pid, 'permSchedule'), d.permSchedule);
           loadProfileData(pid);
           initAnalyticsTab();
@@ -3377,6 +3377,10 @@
         } finally {
           input.value = '';
         }
+      };
+      reader.onerror = () => {
+        showToast('No se pudo leer el archivo seleccionado', true);
+        input.value = '';
       };
       reader.readAsText(file);
     }
@@ -3388,7 +3392,6 @@
       if (!('serviceWorker' in navigator) || !location.protocol.startsWith('http')) return;
 
       let refreshing = false;
-      // Cuando el nuevo sw.js toma el control, recarga automáticamente para mostrar la versión nueva
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (refreshing) return;
         refreshing = true;
@@ -3397,7 +3400,6 @@
 
       navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
         .then((reg) => {
-          // Forzar revisión de actualización cada vez que abres la app
           reg.update().catch(() => {});
         })
         .catch((err) => console.warn('SW omitido:', err));
