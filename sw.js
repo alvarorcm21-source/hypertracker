@@ -1,12 +1,12 @@
 /* ===================================================================
-   FitTracker v1.0.0 - Service Worker (Network-First + Auto-Update)
+   FitTracker v1.0.3 - Service Worker (Network-First + Auto-Update)
    - Siempre busca la versión más reciente en GitHub cuando hay red.
    - Si estás sin señal en el gimnasio, carga desde caché local.
    - Al actualizarse, borra automáticamente cachés viejos (HyperTracker/Titan).
    =================================================================== */
 
 // Cambia este número cada vez que publiques una nueva versión en GitHub
-const CACHE_NAME = 'fittracker-v1.0.0';
+const CACHE_NAME = 'fittracker-v1.0.3';
 
 const CORE_ASSETS = [
   './',
@@ -64,10 +64,15 @@ self.addEventListener('fetch', (event) => {
         return networkRes;
       })
       .catch(() => {
-        // Sin internet (modo gimnasio offline): servir desde caché
+        // Sin internet (modo gimnasio offline): servir desde caché con respaldo válido
         return caches.match(req).then((cachedRes) => {
           if (cachedRes) return cachedRes;
-          if (req.mode === 'navigate') return caches.match('./index.html');
+          if (req.mode === 'navigate') {
+            return caches.match('./index.html').then((indexRes) => {
+              return indexRes || new Response('Sin conexión', { status: 503, statusText: 'Offline' });
+            });
+          }
+          return new Response('', { status: 503, statusText: 'Offline' });
         });
       })
   );
