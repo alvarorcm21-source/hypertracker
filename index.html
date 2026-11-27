@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>FitTracker v1.0.0</title>
+  <!-- PWA Manifest & Iconos GitHub Pages (Appa Logo) -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192x192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
   <meta name="theme-color" content="#0b1120">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -131,8 +136,9 @@
   <div id="splash-screen" class="fixed inset-0 z-[100] bg-[#070b14] flex flex-col items-center justify-center p-6 transition-opacity duration-500">
     <div class="logo-pulse flex flex-col items-center gap-4">
       <div class="w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-600 via-cyan-500 to-purple-600 p-[2px] shadow-2xl shadow-blue-600/30">
-        <div class="w-full h-full rounded-[22px] bg-[#0b1120] flex items-center justify-center">
-          <i class="ph-fill ph-barbell text-5xl text-cyan-400"></i>
+        <div class="w-full h-full rounded-[22px] bg-[#0b1120] flex items-center justify-center overflow-hidden">
+          <img src="./icon-192x192.png" alt="FitTracker Logo" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
+          <i class="ph-fill ph-barbell text-5xl text-cyan-400 hidden"></i>
         </div>
       </div>
       <div class="text-center">
@@ -152,8 +158,9 @@
   <div id="user-select-screen" class="fixed inset-0 z-[90] bg-[#070b14] hidden flex-col items-center justify-center p-5 overflow-y-auto">
     <div class="w-full max-w-md space-y-6 fade-in">
       <div class="text-center space-y-2">
-        <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-blue-600/25 to-purple-600/25 border border-cyan-500/30 flex items-center justify-center">
-          <i class="ph-fill ph-barbell text-3xl text-cyan-400"></i>
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-blue-600/25 to-purple-600/25 border border-cyan-500/30 flex items-center justify-center overflow-hidden">
+          <img src="./icon-192x192.png" alt="FitTracker" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
+          <i class="ph-fill ph-barbell text-3xl text-cyan-400 hidden"></i>
         </div>
         <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">¡Hola!</h2>
         <p class="text-sm text-slate-400">Por favor, selecciona tu usuario para comenzar.</p>
@@ -265,8 +272,9 @@
     <!-- Cabecera Drawer -->
     <div class="p-5 border-b border-slate-800 bg-slate-950/80 flex items-center justify-between">
       <div class="flex items-center gap-2.5">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-          <i class="ph-fill ph-barbell text-white text-xl"></i>
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center overflow-hidden border border-cyan-500/30">
+          <img src="./icon-192x192.png" alt="FitTracker" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
+          <i class="ph-fill ph-barbell text-white text-xl hidden"></i>
         </div>
         <div>
           <h2 class="text-base font-extrabold text-white leading-tight">FitTracker</h2>
